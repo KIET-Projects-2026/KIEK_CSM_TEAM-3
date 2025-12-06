@@ -88,7 +88,145 @@ def answer_question_fast(question, context, max_len=384, doc_stride=128):
             best_score = score
             best_answer = answer
     
-    return best_answer if best_answer else "No good answer found."
+    if not best_answer:
+        return "No good answer found."
+    
+    # Convert to sentence form
+    return format_answer_as_sentence(question, best_answer)
+
+
+def format_answer_as_sentence(question, answer):
+    """Convert answer to a complete sentence based on the question."""
+    question_lower = question.lower().strip()
+    
+    # Remove question mark if present
+    if question_lower.endswith('?'):
+        question_lower = question_lower[:-1].strip()
+    
+    # Determine question type and format accordingly
+    if question_lower.startswith('when '):
+        # Extract subject from question
+        subject = extract_subject_from_when(question_lower)
+        # Ensure proper capitalization
+        if subject:
+            sentence = f"{subject} {answer}."
+            # Capitalize first letter and clean up spaces
+            sentence = sentence.strip()
+            sentence = sentence[0].upper() + sentence[1:] if len(sentence) > 1 else sentence.upper()
+            # Remove double spaces
+            sentence = ' '.join(sentence.split())
+            return sentence
+    
+    elif question_lower.startswith('who '):
+        # "Who founded..." -> "[Answer] founded..."
+        verb_part = question_lower.replace('who ', '').strip()
+        # Check if answer already contains the verb phrase
+        if answer.lower() in question_lower:
+            sentence = f"{answer.capitalize()}."
+        else:
+            sentence = f"{answer} {verb_part}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+    
+    elif question_lower.startswith('what '):
+        if 'what is' in question_lower or 'what was' in question_lower:
+            subject = question_lower.replace('what is', '').replace('what was', '').strip()
+            if subject:
+                sentence = f"It is {answer}."
+            else:
+                sentence = f"The answer is {answer}."
+        elif 'what did' in question_lower:
+            parts = question_lower.split('what did')
+            if len(parts) == 2:
+                subject_verb = parts[1].strip()
+                sentence = f"{answer.capitalize()}."
+            else:
+                sentence = f"The answer is {answer}."
+        else:
+            sentence = f"The answer is {answer}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+    
+    elif question_lower.startswith('where '):
+        # "Where did X develop" -> "X developed in [answer]"
+        subject_part = question_lower.replace('where ', '').strip()
+        if 'did' in subject_part:
+            parts = subject_part.split('did')
+            if len(parts) == 2:
+                subject = parts[1].strip()
+                # Handle verb conversion
+                if 'develop' in subject:
+                    verb = 'developed'
+                    subject = subject.replace('develop', '').strip()
+                elif 'live' in subject:
+                    verb = 'lived'
+                    subject = subject.replace('live', '').strip()
+                else:
+                    verb = 'was'
+                sentence = f"{subject.capitalize()} {verb} in {answer}."
+            else:
+                sentence = f"It is in {answer}."
+        else:
+            sentence = f"It is in {answer}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+    
+    elif question_lower.startswith('how '):
+        sentence = f"{answer.capitalize()}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+    
+    elif question_lower.startswith('why '):
+        if not answer.lower().startswith('because'):
+            sentence = f"Because {answer.lower()}."
+        else:
+            sentence = f"{answer.capitalize()}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+    
+    else:
+        # Default format for other question types
+        sentence = f"The answer is {answer}."
+        sentence = ' '.join(sentence.split())
+        return sentence
+
+
+def extract_subject_from_when(question):
+    """Extract subject from 'when' questions."""
+    # Remove 'when' and common question words
+    subject = question.replace('when ', '').strip()
+    
+    # Handle different forms
+    if 'did' in subject:
+        # "when did India gain independence" -> "India gained independence in"
+        parts = subject.split('did')
+        if len(parts) == 2:
+            noun = parts[0].strip().capitalize()
+            verb_phrase = parts[1].strip()
+            # Convert to past tense format
+            if 'gain' in verb_phrase:
+                verb_phrase = verb_phrase.replace('gain', 'gained')
+            elif 'get' in verb_phrase:
+                verb_phrase = verb_phrase.replace('get', 'got')
+            elif 'start' in verb_phrase or 'begin' in verb_phrase:
+                if 'start' in verb_phrase:
+                    verb_phrase = verb_phrase.replace('start', 'started')
+                else:
+                    verb_phrase = verb_phrase.replace('begin', 'began')
+            elif 'end' in verb_phrase:
+                verb_phrase = verb_phrase.replace('end', 'ended')
+            return f"{noun} {verb_phrase} in"
+    
+    elif 'was' in subject or 'were' in subject:
+        # "when was the war" -> "The war was in"
+        parts = subject.split('was') if 'was' in subject else subject.split('were')
+        if len(parts) >= 1:
+            noun = parts[0].strip().capitalize()
+            verb = 'was' if 'was' in subject else 'were'
+            return f"{noun} {verb} in"
+    
+    # Default format
+    return "It was in"
 
 @app.route("/", methods=["GET", "POST"])
 def index():
