@@ -159,14 +159,6 @@ The application uses a knowledge base covering:
 - Independence movement
 - Post-independence India
 
-## 🤝 Contributing
-
-Contributions are welcome! Areas for improvement:
-- Expand the knowledge base in `context.txt`
-- Add more question types
-- Improve answer formatting logic
-- Add unit tests
-- Implement caching for repeated questions
 
 ## 👥 Team
 
