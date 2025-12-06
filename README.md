@@ -171,24 +171,6 @@ Contributions are welcome! Areas for improvement:
 - Add unit tests
 - Implement caching for repeated questions
 
-## 📄 License
-
-This project is part of KIET academic projects.
-
 ## 👥 Team
 
 KIEK_CSM_TEAM-3
-
-## 🙏 Acknowledgments
-
-- **Hugging Face** for the Transformers library
-- **deepset** for the fine-tuned RoBERTa model
-- **Stanford NLP** for the SQuAD dataset
-
-## 📞 Support
-
-For issues or questions, please open an issue on the GitHub repository.
-
----
-
-**Note**: This is a development server. For production deployment, use a production-grade WSGI server like Gunicorn or Waitress.
