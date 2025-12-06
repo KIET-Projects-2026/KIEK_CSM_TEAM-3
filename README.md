@@ -75,9 +75,6 @@ KIEK_CSM_TEAM-3/
 ├── context.txt                 # Knowledge base (India's history)
 ├── templates/
 │   └── index.html              # Web interface
-├── test_qa.py                  # Basic testing script
-├── test_comprehensive.py       # Comprehensive test suite
-├── DEPLOYMENT_REPORT.txt       # Deployment readiness report
 └── README.md                   # This file
 ```
 
